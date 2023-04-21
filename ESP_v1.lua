@@ -1,33 +1,84 @@
+--ESP v1.2 made by ItsTuna_YT
+
 local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
 local Player = Players.LocalPlayer
 
-local outline = Instance.new("Highlight")
-outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+local Outline = Instance.new("Highlight")
+Outline.Name = "_esp"
+Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+
+local Enabled = true
 
 local ConnectionData = {}
 local InstanceData = {}
 
-function addESP(character)
-	InstanceData[character] = outline:Clone()
+ConnectionData["players"] = {}
+
+function _addESP(character)
+	if InstanceData[character] then return end
+	InstanceData[character] = Outline:Clone()
+	InstanceData[character].Enabled = Enabled
 	InstanceData[character].Parent = character
 end
 
-function connect(player)
-	ConnectionData[player] = player.CharacterAdded:Connect(addESP)
+function _removeESP(character)
+	if not InstanceData[character] then return end
+	--InstanceData[character]:Destroy()
+	InstanceData[character] = nil
 end
 
-function disconnect(player)
-	InstanceData[player.Character] = nil
-	if not ConnectionData[player] then return end
-	ConnectionData[player]:Disconnect()
-	ConnectionData[player] = nil
+function _connect(player)
+	if ConnectionData.players[player] then return end
+	ConnectionData.players[player] = {}
+	ConnectionData.players[player][1] = player.CharacterAdded:Connect(_addESP)
+	ConnectionData.players[player][2] = player.CharacterRemoving:Connect(_removeESP)
 end
+
+function _disconnect(player)
+	InstanceData[player.Character]:Destroy()
+	InstanceData[player.Character] = nil
+	if not ConnectionData.players[player] then return end
+	for _, connection in ConnectionData.players[player] do connection:Disconnect() end
+	ConnectionData.players[player] = nil
+	--ConnectionData.players[player]:Disconnect()
+	--ConnectionData.players[player] = nil
+end
+
+function _enable()
+	for _, player in Players:GetPlayers() do
+		if player.Name == Player.Name then continue end
+		if not InstanceData[player.Character] then continue end
+		InstanceData[player.Character].Enabled = true
+	end
+end
+
+function _disable()
+	for _, player in Players:GetPlayers() do
+		if player.Name == Player.Name then continue end
+		if not InstanceData[player.Character] then continue end
+		InstanceData[player.Character].Enabled = false
+	end
+end
+
+function _toggle()
+	Enabled = not Enabled
+	if Enabled then return _enable() end
+	_disable()
+end
+
+UserInputService.InputBegan:Connect(function(input, chatted)
+	if chatted then return end
+	if input.KeyCode ~= Enum.KeyCode.F then return end
+
+	_toggle()
+end)
 
 for _, player in Players:GetPlayers() do
 	if player.Name == Player.Name then continue end
-	addESP(player.Character)
-	connect(player)
+	_addESP(player.Character)
+	_connect(player)
 end
 
-Players.PlayerAdded:Connect(connect)
-Players.PlayerRemoving:Connect(disconnect)
+ConnectionData[1] = Players.PlayerAdded:Connect(_connect)
+ConnectionData[2] = Players.PlayerRemoving:Connect(_disconnect)
