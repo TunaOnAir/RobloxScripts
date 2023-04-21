@@ -1,4 +1,4 @@
---ESP v1.2 made by ItsTuna_YT
+--ESP v1.3 made by ItsTuna_YT
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -18,6 +18,7 @@ ConnectionData["players"] = {}
 function _addESP(character)
 	if InstanceData[character] then return end
 	InstanceData[character] = Outline:Clone()
+	if game.Players[character.Name].Team then InstanceData[character].FillColor = game.Players[character.Name].Team.TeamColor.Color end
 	InstanceData[character].Enabled = Enabled
 	InstanceData[character].Parent = character
 end
