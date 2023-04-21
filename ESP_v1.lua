@@ -37,8 +37,7 @@ function _connect(player)
 end
 
 function _disconnect(player)
-	--InstanceData[player.Character]:Destroy()
-	InstanceData[player.Character] = nil
+	if InstanceData[player.Character] then InstanceData[player.Character]:Destroy() InstanceData[player.Character] = nil end
 	if not ConnectionData.players[player] then return end
 	for _, connection in ConnectionData.players[player] do connection:Disconnect() end
 	ConnectionData.players[player] = nil
