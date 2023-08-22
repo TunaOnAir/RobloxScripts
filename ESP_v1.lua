@@ -1,14 +1,17 @@
 --ESP v1.3 made by ItsTuna_YT
 
+local Settings = {
+	Enabled = true,
+	ToggleKey = Enum.KeyCode.Q
+}
+
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local Player = Players.LocalPlayer
+local LocalPlayer = Players.LocalPlayer
 
 local Outline = Instance.new("Highlight")
 Outline.Name = "_esp"
 Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-
-local Enabled = true
 
 local ConnectionData = {}
 local InstanceData = {}
@@ -18,14 +21,14 @@ ConnectionData["players"] = {}
 function _addESP(character)
 	if InstanceData[character] then return end
 	InstanceData[character] = Outline:Clone()
-	if game.Players[character.Name].Team then InstanceData[character].FillColor = game.Players[character.Name].Team.TeamColor.Color end
-	InstanceData[character].Enabled = Enabled
+	InstanceData[character].Enabled = Settings["Enabled"]
+	--if game.Players[character.Name].Team then InstanceData[character].FillColor = game.Players[character.Name].Team.TeamColor.Color end
 	InstanceData[character].Parent = character
 end
 
 function _removeESP(character)
 	if not InstanceData[character] then return end
-	--InstanceData[character]:Destroy()
+	InstanceData[character]:Destroy()
 	InstanceData[character] = nil
 end
 
@@ -47,35 +50,41 @@ end
 
 function _enable()
 	for _, player in Players:GetPlayers() do
-		if player.Name == Player.Name then continue end
-		if not InstanceData[player.Character] then continue end
+		if player.Name == LocalPlayer.Name then continue end
+		if not InstanceData[player.Character] then print("no shit at " .. player.Name) continue end
+		print(player.Name)
 		InstanceData[player.Character].Enabled = true
 	end
 end
 
 function _disable()
 	for _, player in Players:GetPlayers() do
-		if player.Name == Player.Name then continue end
-		if not InstanceData[player.Character] then continue end
+		if player.Name == LocalPlayer.Name then continue end
+		if not InstanceData[player.Character] then print("no shit at " .. player.Name) continue end
+		print(player.Name)
 		InstanceData[player.Character].Enabled = false
 	end
 end
 
 function _toggle()
-	Enabled = not Enabled
-	if Enabled then return _enable() end
+	Settings["Enabled"] = not Settings["Enabled"]
+	if Settings["Enabled"] then return _enable() end
 	_disable()
 end
 
 UserInputService.InputBegan:Connect(function(input, chatted)
 	if chatted then return end
-	if input.KeyCode ~= Enum.KeyCode.F then return end
-
-	_toggle()
+	if input.KeyCode == Settings["ToggleKey"] then 
+		_toggle()
+	end
+	if input.KeyCode == Enum.KeyCode.X then
+		print("Destroying...")
+		script:Destroy()
+	end
 end)
 
 for _, player in Players:GetPlayers() do
-	if player.Name == Player.Name then continue end
+	if player.Name == LocalPlayer.Name then continue end
 	_addESP(player.Character)
 	_connect(player)
 end
